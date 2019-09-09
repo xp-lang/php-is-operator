@@ -5,10 +5,13 @@ use lang\ast\FunctionType;
 use lang\ast\MapType;
 use lang\ast\Node;
 use lang\ast\UnionType;
+use lang\ast\nodes\Assignment;
 use lang\ast\nodes\BinaryExpression;
+use lang\ast\nodes\Braced;
 use lang\ast\nodes\InstanceOfExpression;
 use lang\ast\nodes\InvokeExpression;
 use lang\ast\nodes\Literal;
+use lang\ast\nodes\Variable;
 use lang\ast\syntax\Extension;
 
 class IsOperator implements Extension {
@@ -22,7 +25,7 @@ class IsOperator implements Extension {
       return $node;
     });
 
-    $test= function($literal, $expr) {
+    $test= function($literal, $expr, $temp) {
       static $is= [
         'string'   => true,
         'int'      => true,
@@ -36,9 +39,9 @@ class IsOperator implements Extension {
       // PHP 7.0 compatibility, is_iterable() doesn't exist there
       if ('iterable' === $literal) {
         return new BinaryExpression(
-          new InstanceOfExpression($expr, '\Traversable'),
+          new InstanceOfExpression($temp ? new Braced(new Assignment($temp, '=', $expr)) : $expr, '\Traversable'),
           '||',
-          new InvokeExpression(new Literal('is_array'), [$expr])
+          new InvokeExpression(new Literal('is_array'), [$temp])
         );
       } else if (isset($is[$literal])) {
         return new InvokeExpression(new Literal('is_'.$literal), [$expr]);
@@ -58,14 +61,15 @@ class IsOperator implements Extension {
         return new InvokeExpression(new Literal('is'), [new Literal('"'.$t->name().'"'), $node->expression]);
       } else {
         $literal= $t->literal();
+        $temp= new Variable($codegen->symbol());
         if ('?' === $literal[0]) {
           return new BinaryExpression(
-            new BinaryExpression(new Literal('null'), '===', $node->expression),
+            new BinaryExpression(new Literal('null'), '===', new Braced(new Assignment($temp, '=', $node->expression))),
             '||',
-            $test(substr($literal, 1), $node->expression)
+            $test(substr($literal, 1), $temp, null)
           );
         } else {
-          return $test($literal, $node->expression);
+          return $test($literal, $node->expression, $temp);
         }
       }
     });
