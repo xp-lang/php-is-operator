@@ -7,7 +7,7 @@ Is operator for PHP
 [![Supports PHP 7.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-7_0plus.png)](http://php.net/)
 [![Latest Stable Version](https://poser.pugx.org/xp-lang/php-is-operator/version.png)](https://packagist.org/packages/xp-lang/php-is-operator)
 
-Plugin for the [XP Compiler](https://github.com/xp-framework/compiler/) which adds switch expressions to the PHP language.
+Plugin for the [XP Compiler](https://github.com/xp-framework/compiler/) which adds an `is` operator to the PHP language.
 
 Before
 ------
