@@ -6,9 +6,9 @@
   "description" : "Is operator for PHP",
   "keywords": ["language", "module", "xp"],
   "require" : {
-    "xp-framework/core": "^9.0 | ^8.0",
+    "xp-framework/core": "^9.0 | ^8.0 | ^7.0",
     "xp-framework/compiler": "dev-master as 4.0.0",
-    "php" : ">=7.0.0"
+    "php" : ">=5.6.0"
   },
   "require-dev" : {
     "xp-framework/unittest": "^9.0 | ^8.0"
