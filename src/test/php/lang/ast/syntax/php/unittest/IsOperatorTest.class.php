@@ -1,6 +1,7 @@
 <?php namespace lang\ast\syntax\php\unittest;
 
 use lang\ast\unittest\emit\EmittingTest;
+use unittest\Assert;
 
 class IsOperatorTest extends EmittingTest {
 
@@ -12,7 +13,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertTrue($r);
+    Assert::true($r);
   }
 
   #[@test]
@@ -23,7 +24,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertTrue($r);
+    Assert::true($r);
   }
 
   #[@test]
@@ -34,7 +35,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertTrue($r);
+    Assert::true($r);
   }
 
   #[@test]
@@ -45,7 +46,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertTrue($r);
+    Assert::true($r);
   }
 
   #[@test]
@@ -56,7 +57,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertTrue($r);
+    Assert::true($r);
   }
 
   #[@test]
@@ -68,7 +69,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertTrue($r);
+    Assert::true($r);
   }
 
   #[@test]
@@ -79,7 +80,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, true, true, true, true], $r);
+    Assert::equals([true, true, true, true, true], $r);
   }
 
   #[@test]
@@ -90,7 +91,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, true, true], $r);
+    Assert::equals([true, true, true], $r);
   }
 
   #[@test]
@@ -101,7 +102,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, true, true, false], $r);
+    Assert::equals([true, true, true, false], $r);
   }
 
   #[@test]
@@ -112,7 +113,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, true, false], $r);
+    Assert::equals([true, true, false], $r);
   }
 
   #[@test]
@@ -123,7 +124,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, true, false], $r);
+    Assert::equals([true, true, false], $r);
   }
 
   #[@test]
@@ -138,7 +139,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, true, false], $r);
+    Assert::equals([true, true, false], $r);
   }
 
   #[@test]
@@ -149,7 +150,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, false], $r);
+    Assert::equals([true, false], $r);
   }
 
   #[@test]
@@ -160,7 +161,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, false, false], $r);
+    Assert::equals([true, false, false], $r);
   }
 
   #[@test]
@@ -171,7 +172,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, true, false], $r);
+    Assert::equals([true, true, false], $r);
   }
 
   #[@test]
@@ -182,7 +183,7 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals([true, false], $r);
+    Assert::equals([true, false], $r);
   }
 
   #[@test]
@@ -194,6 +195,6 @@ class IsOperatorTest extends EmittingTest {
       }
     }');
 
-    $this->assertEquals('string <Test>', $r);
+    Assert::equals('string <Test>', $r);
   }
 }
