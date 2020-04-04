@@ -46,7 +46,7 @@ class IsOperator implements Extension {
       } else if (isset($is[$literal])) {
         return new InvokeExpression(new Literal('is_'.$literal), [$expr]);
       } else {
-        return new InstanceOfExpression($expr, new Literal($literal));
+        return new InstanceOfExpression($expr, $literal);
       }
     };
 

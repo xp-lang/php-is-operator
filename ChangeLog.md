@@ -3,6 +3,10 @@ Is operator for PHP - ChangeLog
 
 ## ?.?.? / ????-??-??
 
+## 1.0.1 / 2020-04-04
+
+* Fixed emitting errors for `instanceof` - @thekid
+
 ## 1.0.0 / 2019-11-30
 
 * Implemented xp-framework/rfc#334: Drop PHP 5.6. The minimum required
