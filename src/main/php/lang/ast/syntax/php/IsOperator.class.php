@@ -1,18 +1,9 @@
 <?php namespace lang\ast\syntax\php;
 
-use lang\ast\ArrayType;
-use lang\ast\FunctionType;
-use lang\ast\MapType;
 use lang\ast\Node;
-use lang\ast\UnionType;
-use lang\ast\nodes\Assignment;
-use lang\ast\nodes\BinaryExpression;
-use lang\ast\nodes\Braced;
-use lang\ast\nodes\InstanceOfExpression;
-use lang\ast\nodes\InvokeExpression;
-use lang\ast\nodes\Literal;
-use lang\ast\nodes\Variable;
+use lang\ast\nodes\{Assignment, BinaryExpression, Braced, InstanceOfExpression, InvokeExpression, Literal, Variable};
 use lang\ast\syntax\Extension;
+use lang\ast\types\{IsArray, IsFunction, IsMap, IsUnion};
 
 class IsOperator implements Extension {
 
@@ -57,7 +48,7 @@ class IsOperator implements Extension {
       }
 
       // Verify builtin primitives with is_XXX(), value types with instanceof, others using is()
-      if ($t instanceof FunctionType || $t instanceof ArrayType || $t instanceof MapType || $t instanceof UnionType) {
+      if ($t instanceof IsFunction || $t instanceof IsArray || $t instanceof IsMap || $t instanceof IsUnion) {
         return new InvokeExpression(new Literal('is'), [new Literal('"'.$t->name().'"'), $node->expression]);
       } else {
         $literal= $t->literal();
