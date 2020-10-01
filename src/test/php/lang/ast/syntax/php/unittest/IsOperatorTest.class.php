@@ -1,11 +1,11 @@
 <?php namespace lang\ast\syntax\php\unittest;
 
 use lang\ast\unittest\emit\EmittingTest;
-use unittest\Assert;
+use unittest\{Assert, Test};
 
 class IsOperatorTest extends EmittingTest {
 
-  #[@test]
+  #[Test]
   public function this_is_self() {
     $r= $this->run('class <T> {
       public function run() {
@@ -16,7 +16,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::true($r);
   }
 
-  #[@test]
+  #[Test]
   public function new_self_is_static() {
     $r= $this->run('class <T> {
       public function run() {
@@ -27,7 +27,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::true($r);
   }
 
-  #[@test]
+  #[Test]
   public function is_qualified_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -38,7 +38,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::true($r);
   }
 
-  #[@test]
+  #[Test]
   public function is_imported_type() {
     $r= $this->run('use util\Date; class <T> {
       public function run() {
@@ -49,7 +49,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::true($r);
   }
 
-  #[@test]
+  #[Test]
   public function is_aliased_type() {
     $r= $this->run('use util\Date as D; class <T> {
       public function run() {
@@ -60,7 +60,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::true($r);
   }
 
-  #[@test]
+  #[Test]
   public function is_type_variable() {
     $r= $this->run('class <T> {
       public function run() {
@@ -72,7 +72,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::true($r);
   }
 
-  #[@test]
+  #[Test]
   public function is_primitive_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -83,7 +83,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, true, true, true, true], $r);
   }
 
-  #[@test]
+  #[Test]
   public function is_nullable_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -94,7 +94,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, true, true], $r);
   }
 
-  #[@test]
+  #[Test]
   public function is_array_pseudo_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -105,7 +105,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, true, true, false], $r);
   }
 
-  #[@test]
+  #[Test]
   public function is_object_pseudo_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -116,7 +116,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, true, false], $r);
   }
 
-  #[@test]
+  #[Test]
   public function is_callable_pseudo_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -127,7 +127,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, true, false], $r);
   }
 
-  #[@test]
+  #[Test]
   public function is_native_iterable_type() {
     $r= $this->run('class <T> implements \IteratorAggregate {
       public function getIterator() {
@@ -142,7 +142,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, true, false], $r);
   }
 
-  #[@test]
+  #[Test]
   public function is_map_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -153,7 +153,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, false], $r);
   }
 
-  #[@test]
+  #[Test]
   public function is_array_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -164,7 +164,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, false, false], $r);
   }
 
-  #[@test]
+  #[Test]
   public function is_union_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -175,7 +175,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, true, false], $r);
   }
 
-  #[@test]
+  #[Test]
   public function is_function_type() {
     $r= $this->run('class <T> {
       public function run() {
@@ -186,7 +186,7 @@ class IsOperatorTest extends EmittingTest {
     Assert::equals([true, false], $r);
   }
 
-  #[@test]
+  #[Test]
   public function precedence() {
     $r= $this->run('class <T> {
       public function run() {
