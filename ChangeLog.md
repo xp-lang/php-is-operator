@@ -3,6 +3,10 @@ Is operator for PHP - ChangeLog
 
 ## ?.?.? / ????-??-??
 
+## 1.0.2 / 2020-10-01
+
+* Fixed errors occuring after AST types refactoring - @thekid
+
 ## 1.0.1 / 2020-04-04
 
 * Fixed emitting errors for `instanceof` - @thekid
