@@ -53,6 +53,7 @@ No further action is required.
 
 See also
 --------
+* https://wiki.php.net/rfc/pattern-matching
 * https://docs.hhvm.com/hack/expressions-and-operators/is
 * https://kotlinlang.org/docs/reference/typecasts.html
 * https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/is
