@@ -130,7 +130,7 @@ class IsOperatorTest extends EmittingTest {
   #[Test]
   public function is_native_iterable_type() {
     $r= $this->run('class <T> implements \IteratorAggregate {
-      public function getIterator() {
+      public function getIterator(): \Traversable {
         yield 1;
       }
 
