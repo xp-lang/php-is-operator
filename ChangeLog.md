@@ -3,6 +3,10 @@ Is operator for PHP - ChangeLog
 
 ## ?.?.? / ????-??-??
 
+## 1.1.2 / 2022-01-24
+
+* Made compatible with compiler version 8.0.0 - @thekid
+
 ## 1.1.1 / 2021-10-21
 
 * Made compatible with XP 11, Compiler version 7.0.0 - @thekid
