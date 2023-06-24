@@ -58,3 +58,4 @@ See also
 * https://docs.hhvm.com/hack/expressions-and-operators/is
 * https://kotlinlang.org/docs/reference/typecasts.html
 * https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/is
+* https://externals.io/message/120655 (Proposal to introduce is operator)
