@@ -11,7 +11,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: PHP ${{ matrix.php-versions }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.php-versions >= '8.3' }}
+    continue-on-error: ${{ matrix.php-versions >= '8.4' }}
     strategy:
       fail-fast: false
       matrix:
@@ -54,4 +54,4 @@ jobs:
         echo "vendor/xp-framework/compiler/src/test/php" >> composer.pth
 
     - name: Run test suite
-      run: sh xp-run xp.test.Runner src/test/php
+      run: sh xp-run xp.test.Runner -r Dots src/test/php
