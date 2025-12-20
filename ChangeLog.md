@@ -3,7 +3,7 @@ Is operator for PHP - ChangeLog
 
 ## ?.?.? / ????-??-??
 
-## 2.1.0 / 2024-03-24
+## 2.1.0 / 2025-12-20
 
 * Emit `$expr is mixed` as `true`, making it effectively a wildcard as
   seen in https://wiki.php.net/rfc/pattern-matching
