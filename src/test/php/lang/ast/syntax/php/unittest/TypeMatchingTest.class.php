@@ -86,6 +86,7 @@ class TypeMatchingTest extends EmittingTest {
     yield ['1 is int|float', true];
     yield ['1.5 is int|float', true];
     yield ['"test" is int|float', false];
+    yield ['$this is array|IteratorAggregate', true];
   }
 
   #[Test, Values(from: 'fixtures')]
