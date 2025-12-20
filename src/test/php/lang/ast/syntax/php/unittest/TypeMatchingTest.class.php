@@ -35,6 +35,9 @@ class TypeMatchingTest extends EmittingTest {
     yield ['[] is array<string, int>', true];
     yield ['["one" => 1] is array<string, int>', true];
     yield ['[1] is array<string, int>', false];
+    yield ['[1, "test"] is array<mixed>', true];
+    yield ['[1, "test"] is array<int|string>', true];
+    yield ['[null, "test"] is array<int|string>', false];
 
     yield ['$this is object', true];
     yield ['new Date() is object', true];
