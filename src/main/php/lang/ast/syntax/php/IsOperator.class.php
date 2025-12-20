@@ -3,7 +3,7 @@
 use lang\ast\Node;
 use lang\ast\nodes\{Assignment, BinaryExpression, Braced, InstanceOfExpression, InvokeExpression, Literal, Variable};
 use lang\ast\syntax\Extension;
-use lang\ast\types\{IsArray, IsFunction, IsMap, IsUnion};
+use lang\ast\types\{IsArray, IsFunction, IsMap, IsUnion, IsIntersection};
 
 class IsOperator implements Extension {
 
@@ -42,7 +42,7 @@ class IsOperator implements Extension {
       }
 
       // Verify builtin primitives with is_XXX(), value types with instanceof, others using is()
-      if ($t instanceof IsFunction || $t instanceof IsArray || $t instanceof IsMap || $t instanceof IsUnion) {
+      if ($t instanceof IsFunction || $t instanceof IsArray || $t instanceof IsMap || $t instanceof IsUnion || $t instanceof IsIntersection) {
         return new InvokeExpression(new Literal('is'), [new Literal('"'.$t->name().'"'), $node->expression]);
       } else {
         $literal= $t->literal();

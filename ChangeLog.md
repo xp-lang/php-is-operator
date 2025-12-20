@@ -3,6 +3,13 @@ Is operator for PHP - ChangeLog
 
 ## ?.?.? / ????-??-??
 
+## 2.1.0 / 2024-03-24
+
+* Added support for intersection types, e.g. `Runnable|IteratorAggregate`
+  (@thekid)
+* Added PHP 8.5 and 8.6 to the test matrix following the PHP 8.5 release
+  (@thekid)
+
 ## 2.0.0 / 2024-03-24
 
 * Dropped support for PHP 7.0 - 7.3 - @thekid
