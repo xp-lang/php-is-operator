@@ -6,6 +6,17 @@ use test\{Assert, Test, Values};
 class IsOperatorTest extends EmittingTest {
 
   #[Test]
+  public function is_mixed_type() {
+    $r= $this->run('class %T {
+      public function run() {
+        return $this is mixed;
+      }
+    }');
+
+    Assert::true($r);
+  }
+
+  #[Test]
   public function precedence() {
     $r= $this->run('class %T {
       public function run() {

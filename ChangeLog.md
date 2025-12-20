@@ -5,6 +5,9 @@ Is operator for PHP - ChangeLog
 
 ## 2.1.0 / 2024-03-24
 
+* Emit `$expr is mixed` as `true`, making it effectively a wildcard as
+  seen in https://wiki.php.net/rfc/pattern-matching
+  (@thekid)
 * Added support for intersection types, e.g. `Runnable|IteratorAggregate`
   (@thekid)
 * Added PHP 8.5 and 8.6 to the test matrix following the PHP 8.5 release

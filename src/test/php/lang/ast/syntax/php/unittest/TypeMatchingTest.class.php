@@ -89,7 +89,7 @@ class TypeMatchingTest extends EmittingTest {
   public function test($expr, $expected) {
     Assert::equals($expected, $this->run('
       use util\\Date; use lang\\Runnable;
-      
+
       class %T implements Runnable, IteratorAggregate {
 
       public function getIterator(): Traversable {

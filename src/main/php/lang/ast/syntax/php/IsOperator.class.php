@@ -30,6 +30,8 @@ class IsOperator implements Extension {
 
       if (isset($is[$literal])) {
         return new InvokeExpression(new Literal('is_'.$literal), [$expr]);
+      } else if ('mixed' === $literal) {
+        return new Literal('true');
       } else {
         return new InstanceOfExpression($expr, $literal);
       }
