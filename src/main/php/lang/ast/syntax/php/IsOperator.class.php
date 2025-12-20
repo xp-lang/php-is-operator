@@ -24,17 +24,11 @@ class IsOperator implements Extension {
         'bool'     => true,
         'array'    => true,
         'object'   => true,
-        'callable' => true
+        'callable' => true,
+        'iterable' => true,
       ];
 
-      // PHP 7.0 compatibility, is_iterable() doesn't exist there
-      if ('iterable' === $literal) {
-        return new BinaryExpression(
-          new InstanceOfExpression($temp ? new Braced(new Assignment($temp, '=', $expr)) : $expr, '\Traversable'),
-          '||',
-          new InvokeExpression(new Literal('is_array'), [$temp])
-        );
-      } else if (isset($is[$literal])) {
+      if (isset($is[$literal])) {
         return new InvokeExpression(new Literal('is_'.$literal), [$expr]);
       } else {
         return new InstanceOfExpression($expr, $literal);
