@@ -7,52 +7,54 @@ class IsOperatorTest extends EmittingTest {
 
   #[Test]
   public function is_mixed_type() {
-    $r= $this->run('class %T {
+    Assert::true($this->run('class %T {
       public function run() {
         return $this is mixed;
       }
-    }');
-
-    Assert::true($r);
+    }'));
   }
 
   #[Test]
   public function precedence() {
-    $r= $this->run('class %T {
+    Assert::equals('string <Test>', $this->run('class %T {
       public function run() {
         $arg= "Test";
         return $arg is string ? sprintf("string <%s>", $arg) : typeof($arg)->literal();
       }
-    }');
-
-    Assert::equals('string <Test>', $r);
+    }'));
   }
 
   #[Test, Values([[1, 'int'], ['test', 'string']])]
   public function with_match_statement($arg, $expected) {
-    $r= $this->run('class %T {
+    Assert::equals($expected, $this->run('class %T {
       public function run(string|int $arg) {
         return match {
           $arg is string => "string",
           $arg is int => "int",
         };
       }
-    }', $arg);
-
-    Assert::equals($expected, $r);
+    }', $arg));
   }
 
   #[Test, Values([[1, 'int'], ['test', 'string']])]
   public function match_is_variant($arg, $expected) {
-    $r= $this->run('class %T {
+    Assert::equals($expected, $this->run('class %T {
       public function run(string|int $arg) {
         return match ($arg) is {
           string => "string",
           int => "int",
         };
       }
-    }', $arg);
+    }', $arg));
+  }
 
-    Assert::equals($expected, $r);
+  #[Test, Values([[1, true], ["one", true], [null, false]])]
+  public function as_closure($arg, $expected) {
+    Assert::equals($expected, $this->run('class %T {
+      public function run($arg) {
+        $f= fn($arg) => $arg is int|string;
+        return $f($arg);
+      }
+    }', $arg));
   }
 }
