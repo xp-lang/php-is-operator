@@ -43,6 +43,30 @@ class VariableBindingTest extends EmittingTest {
     }'));
   }
 
+  #[Test, Values(['get apple', 'pick up apple', 'pick apple up'])]
+  public function compound_binding($input) {
+    Assert::equals('apple', $this->run('class %T {
+      public function run($command) {
+        return match ($command) is {
+          ["get", $object]|["pick", "up", $object]|["pick", $object, "up"] => $object,
+          default => null,
+        };
+      }
+    }', explode(' ', $input)));
+  }
+
+  #[Test, Values([['go north', 'north'], ['go south', 'south'], ['go home', null]])]
+  public function bind_with_subpattern($input, $expected) {
+    Assert::equals($expected, $this->run('class %T {
+      public function run($command) {
+        return match ($command) is {
+          ["go", $direction & ("north"|"south"|"east"|"west")] => $direction,
+          default => null,
+        };
+      }
+    }', explode(' ', $input)));
+  }
+
   #[Test, Expect(class: NullPointerException::class, message: '/Undefined variable(.+)z/')]
   public function delayed_binding() {
     Assert::equals([false, null], $this->run('use lang\\ast\\syntax\\php\\unittest\\Point; class %T {
