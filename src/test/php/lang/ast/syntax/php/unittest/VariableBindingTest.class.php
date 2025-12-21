@@ -29,6 +29,7 @@ class VariableBindingTest extends EmittingTest {
     yield ['[0, 1, 2] is [$x, $y, $z] ? [$x, $y, $z] : null', [0, 1, 2]];
 
     yield ['[1, [1]] is [1, $rest] ? $rest : null', [1]];
+    yield ['[1, [2], "three"] is [1, mixed, $rest] ? $rest : null', 'three'];
 
     yield ['["one" => 1, "two" => 2] is ["one" => 1, "two" => $t] ? $t : null', 2];
     yield ['["one" => 0, "two" => 2] is ["one" => 1, "two" => $t] ? $t : null', null];
