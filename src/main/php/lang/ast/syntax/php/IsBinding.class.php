@@ -1,7 +1,6 @@
 <?php namespace lang\ast\syntax\php;
 
 use lang\ast\Type;
-use util\Objects;
 
 class IsBinding extends Type {
   public $variable;
@@ -9,7 +8,7 @@ class IsBinding extends Type {
   /**
    * Creates a binding "type"
    *
-   * @param  lang.ast.nodes.Variable
+   * @param  lang.ast.nodes.Variable $variable
    */
   public function __construct($variable) {
     $this->variable= $variable;
@@ -17,6 +16,6 @@ class IsBinding extends Type {
 
   /** @return string */
   public function toString() {
-    return nameof($this).'('.Objects::stringOf($this->variable).')';
+    return nameof($this).'('.$this->variable->pointer.')';
   }
 }

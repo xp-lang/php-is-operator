@@ -7,7 +7,7 @@ class IsArrayStructure extends Type {
   public $patterns, $rest;
 
   /**
-   * Creates a object structure "type"
+   * Creates a array structure "type"
    *
    * @param  lang.ast.Type[] $patterns
    * @param  bool $rest
