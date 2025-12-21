@@ -41,4 +41,18 @@ class IsOperatorTest extends EmittingTest {
 
     Assert::equals($expected, $r);
   }
+
+  #[Test, Values([[1, 'int'], ['test', 'string']])]
+  public function match_is_variant($arg, $expected) {
+    $r= $this->run('class %T {
+      public function run(string|int $arg) {
+        return match ($arg) is {
+          string => "string",
+          int => "int",
+        };
+      }
+    }', $arg);
+
+    Assert::equals($expected, $r);
+  }
 }

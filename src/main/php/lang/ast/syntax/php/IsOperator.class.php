@@ -1,21 +1,23 @@
 <?php namespace lang\ast\syntax\php;
 
-use lang\ast\Node;
 use lang\ast\nodes\{
-  Assignment,
   ArrayLiteral,
+  Assignment,
   BinaryExpression,
   Braced,
+  InstanceExpression,
   InstanceOfExpression,
   InvokeExpression,
   Literal,
+  MatchCondition,
+  MatchExpression,
   OffsetExpression,
-  InstanceExpression,
   ScopeExpression,
   Variable
 };
 use lang\ast\syntax\Extension;
 use lang\ast\types\{IsArray, IsLiteral, IsFunction, IsMap, IsUnion, IsIntersection, IsNullable, IsValue};
+use lang\ast\{Node, Token};
 
 class IsOperator implements Extension {
 
@@ -100,6 +102,52 @@ class IsOperator implements Extension {
 
     $language->infix('is', 60, function($parse, $token, $left) use($pattern) {
       return new PatternMatch($left, $pattern($parse, $this), $left->line);
+    });
+
+    $language->prefix('match', 0, function($parse, $token) use($pattern) {
+      $patterns= false;
+      $condition= null;
+
+      if ('(' === $parse->token->value) {
+        $parse->forward();
+        $condition= $this->expression($parse, 0);
+        $parse->expecting(')', 'match');
+
+        // See https://wiki.php.net/rfc/pattern-matching#match_is_placement
+        if ('is' === $parse->token->value) {
+          $parse->forward();
+          $patterns= true;
+        }
+      }
+
+      $default= null;
+      $cases= [];
+      $parse->expecting('{', 'match');
+      while ('}' !== $parse->token->value) {
+        if ('default' === $parse->token->value) {
+          $parse->forward();
+          $parse->expecting('=>', 'match');
+          $default= $this->expression($parse, 0);
+        } else if ($patterns) {
+          $match= [new PatternMatch($condition, $pattern($parse, $this), $parse->token->line)];
+          $parse->expecting('=>', 'match');
+          $cases[]= new MatchCondition($match, $this->expression($parse, 0), $parse->token->line);
+        } else {
+          $match= [];
+          do {
+            $match[]= $this->expression($parse, 0);
+          } while (',' === $parse->token->value && $parse->forward() | true);
+          $parse->expecting('=>', 'match');
+          $cases[]= new MatchCondition($match, $this->expression($parse, 0), $parse->token->line);
+        }
+
+        if (',' === $parse->token->value) {
+          $parse->forward();
+        }
+      }
+      $parse->expecting('}', 'match');
+
+      return new MatchExpression($patterns ? null : $condition, $cases, $default, $token->line);
     });
 
     $match= function($codegen, $expression, $pattern) use(&$match) {
