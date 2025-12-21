@@ -13,6 +13,7 @@ use lang\ast\nodes\{
   MatchExpression,
   OffsetExpression,
   ScopeExpression,
+  TernaryExpression,
   Variable
 };
 use lang\ast\syntax\Extension;
@@ -196,11 +197,12 @@ class IsOperator implements Extension {
           $match($codegen, $temp, $pattern->element)
         );
       } else if ($pattern instanceof IsBinding) {
-        return new BinaryExpression(
-          new Literal('true'),
-          '|',
-          new Braced(new Assignment($pattern->variable, '=', $expression))
-        );
+        $true= new Literal('true');
+        return new Braced(new TernaryExpression(
+          new Braced(new Assignment($pattern->variable, '=', $expression)),
+          $true,
+          $true
+        ));
       } else if ($pattern instanceof IsCompound) {
         $s= sizeof($pattern->patterns);
         if (1 === $s) return $match($codegen, $expression, $pattern->patterns[0]);
