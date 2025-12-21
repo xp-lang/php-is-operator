@@ -1,7 +1,8 @@
 <?php namespace lang\ast\syntax\php\unittest;
 
+use lang\NullPointerException;
 use lang\ast\unittest\emit\EmittingTest;
-use test\{Assert, Test, Values};
+use test\{Assert, Test, Values, Expect};
 
 /** @see https://wiki.php.net/rfc/pattern-matching#variable_binding */
 class VariableBindingTest extends EmittingTest {
@@ -36,6 +37,16 @@ class VariableBindingTest extends EmittingTest {
     Assert::equals($expected, $this->run('use lang\\Value, lang\\ast\\syntax\\php\\unittest\\Point; class %T {
       public function run() {
         return '.$expr.';
+      }
+    }'));
+  }
+
+  #[Test, Expect(class: NullPointerException::class, message: 'Undefined variable: z')]
+  public function delayed_binding() {
+    Assert::equals([false, null], $this->run('use lang\\ast\\syntax\\php\\unittest\\Point; class %T {
+      public function run() {
+        new Point(1, -1) is Point(x: 0, :$z);
+        return $z;
       }
     }'));
   }
