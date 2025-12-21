@@ -8,12 +8,17 @@ class VariableBindingTest extends EmittingTest {
 
   /** @return iterable */
   private function fixtures() {
+    yield ['new Point(1, 2, 3) is Point(z: $z) ? $z : null', 3];
+    yield ['new Point(1, 2, 3) is Point(:$z) ? $z : null', 3];
+    yield ['new Point(1, 2, 3) is Point(z: $bound) ? $bound : null', 3];
+
     yield ['new Point(1, 2, 3) is Point(x: 1, y: 2, z: $z) ? $z : null', 3];
     yield ['new Point(1, 2, 3) is Point(x: 0, y: 2, z: $z) ? $z : null', null];
 
     yield ['new Point(1, 2, 3) is Point(x: $x, y: $y, z: $z) ? [$x, $y, $z] : null', [1, 2, 3]];
     yield ['new Point(1, 2, 3) is Point(:$x, :$y, :$z) ? [$x, $y, $z] : null', [1, 2, 3]];
 
+    yield ['new Point(1, 2, 3) is Point(:$z & ?int) ? $z : null', 3];
     yield ['new Point(1, 2, 3) is Point(:$x, :$y, :$z & > 0) ? [$x, $y, $z] : null', [1, 2, 3]];
     yield ['new Point(1, 2, 0) is Point(:$x, :$y, :$z & > 0) ? [$x, $y, $z] : null', null];
 

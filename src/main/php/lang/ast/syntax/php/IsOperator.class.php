@@ -57,7 +57,7 @@ class IsOperator implements Extension {
           $parse->forward();
         }
       } else if ('string' === $parse->token->kind || 'integer' === $parse->token->kind || 'decimal' === $parse->token->kind) {
-        $r= new IsComparison(new Literal($parse->token->value), '===');
+        $r= new IsIdentical(new Literal($parse->token->value));
         $parse->forward();
       } else if ('variable' === $parse->token->kind) {
         $parse->forward();
@@ -176,8 +176,18 @@ class IsOperator implements Extension {
         }
       } else if ($pattern instanceof IsValue) {
         return new InstanceOfExpression($expression, $pattern);
+      } else if ($pattern instanceof IsIdentical) {
+        return new BinaryExpression($expression, '===', $pattern->value);
       } else if ($pattern instanceof IsComparison) {
-        return new BinaryExpression($expression, $pattern->operator, $pattern->value);
+        $temp= new Variable($codegen->symbol());
+        return new BinaryExpression(
+          new InvokeExpression(
+            new Literal('is_numeric'),
+            [new Braced(new Assignment($temp, '=', $expression))]
+          ),
+          '&&',
+          new BinaryExpression($temp, $pattern->operator, $pattern->value)
+        );
       } else if ($pattern instanceof IsNullable) {
         $temp= new Variable($codegen->symbol());
         return new BinaryExpression(

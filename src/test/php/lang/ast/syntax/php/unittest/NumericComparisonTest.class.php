@@ -19,6 +19,15 @@ class NumericComparisonTest extends EmittingTest {
     yield ['1.0 is <=1.0', true];
     yield ['0.0 is <1.0', true];
     yield ['1.0 is <1.0', false];
+
+    yield ['"1" is >0', true];
+    yield ['"1e2" is >=100', true];
+    yield ['"3.141" is >3 & <4', true];
+
+    yield ['null is >0', false];
+    yield ['[] is >0', false];
+    yield ['"test" is >0', false];
+    yield ['((object)[]) is >0', false];
   }
 
   #[Test, Values(from: 'fixtures')]

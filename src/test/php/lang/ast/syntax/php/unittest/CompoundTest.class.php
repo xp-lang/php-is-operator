@@ -29,6 +29,7 @@ class CompoundTest extends EmittingTest {
     yield ['[] is array|""', true];
     yield ['[] is array|null', true];
     yield ['[] is null|array', true];
+    yield ['[] is [] & [...]', true];
 
     yield ['$this is array|Traversable', true];
     yield ['$this is IteratorAggregate|Runnable', true];
