@@ -3,13 +3,13 @@
 use lang\ast\Type;
 use util\Objects;
 
-class IsComparable extends Type {
+class IsComparison extends Type {
   public $value, $operator;
 
   /**
-   * Creates a comparable "type"
+   * Creates a comparison "type"
    *
-   * @param  lang.ast.Type[] $patterns
+   * @param  lang.ast.Node $value
    * @param  string $operator
    */
   public function __construct($value, $operator) {

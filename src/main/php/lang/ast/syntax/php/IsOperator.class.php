@@ -47,11 +47,11 @@ class IsOperator implements Extension {
           $parse->expecting(')', 'object structure');
         } else if ('::' === $parse->token->value) {
           $parse->forward();
-          $r= new IsComparable(new ScopeExpression($r->literal(), new Literal($parse->token->value)), '===');
+          $r= new IsComparison(new ScopeExpression($r->literal(), new Literal($parse->token->value)), '===');
           $parse->forward();
         }
       } else if ('string' === $parse->token->kind || 'integer' === $parse->token->kind || 'decimal' === $parse->token->kind) {
-        $r= new IsComparable(new Literal($parse->token->value), '===');
+        $r= new IsComparison(new Literal($parse->token->value), '===');
         $parse->forward();
       } else if ('variable' === $parse->token->kind) {
         $parse->forward();
@@ -60,7 +60,7 @@ class IsOperator implements Extension {
       } else if ('>' === $parse->token->value || '>=' === $parse->token->value || '<' === $parse->token->value || '<=' === $parse->token->value) {
         $operator= $parse->token->value;
         $parse->forward();
-        $r= new IsComparable(new Literal($parse->token->value), $operator);
+        $r= new IsComparison(new Literal($parse->token->value), $operator);
         $parse->forward();
       } else if ('[' === $parse->token->value) {
         $r= new IsArrayStructure();
@@ -83,7 +83,7 @@ class IsOperator implements Extension {
         $parse->expecting(']', 'array structure');
       } else if ('^' === $parse->token->value) {
         $parse->forward();
-        $r= new IsComparable($types->expression($parse, 0), '===');
+        $r= new IsComparison($types->expression($parse, 0), '===');
       } else {
         $parse->expecting('a type or literal', 'is');
         return null;
@@ -116,7 +116,7 @@ class IsOperator implements Extension {
         }
       } else if ($pattern instanceof IsValue) {
         return new InstanceOfExpression($expression, $pattern);
-      } else if ($pattern instanceof IsComparable) {
+      } else if ($pattern instanceof IsComparison) {
         return new BinaryExpression($expression, $pattern->operator, $pattern->value);
       } else if ($pattern instanceof IsNullable) {
         $temp= new Variable($codegen->symbol());
