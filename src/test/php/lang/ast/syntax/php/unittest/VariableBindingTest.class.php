@@ -41,7 +41,7 @@ class VariableBindingTest extends EmittingTest {
     }'));
   }
 
-  #[Test, Expect(class: NullPointerException::class, message: 'Undefined variable: z')]
+  #[Test, Expect(class: NullPointerException::class, message: '/Undefined variable(.+)z/')]
   public function delayed_binding() {
     Assert::equals([false, null], $this->run('use lang\\ast\\syntax\\php\\unittest\\Point; class %T {
       public function run() {
