@@ -6,6 +6,12 @@ use util\Objects;
 class IsObjectStructure extends Type {
   public $type, $patterns;
 
+  /**
+   * Creates a object structure "type"
+   *
+   * @param  lang.ast.Type $type
+   * @param  lang.ast.Type[] $patterns
+   */
   public function __construct($type, $patterns= []) {
     $this->type= $type;
     $this->patterns= $patterns;

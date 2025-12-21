@@ -4,11 +4,17 @@ use lang\ast\Type;
 use util\Objects;
 
 class IsArrayStructure extends Type {
-  public $patterns;
-  public $rest= false;
+  public $patterns, $rest;
 
-  public function __construct($patterns= []) {
+  /**
+   * Creates a object structure "type"
+   *
+   * @param  lang.ast.Type[] $patterns
+   * @param  bool $rest
+   */
+  public function __construct($patterns= [], $rest= false) {
     $this->patterns= $patterns;
+    $this->rest= $rest;
   }
 
   /** @return string */
