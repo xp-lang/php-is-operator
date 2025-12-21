@@ -18,6 +18,7 @@ class CompoundTest extends EmittingTest {
     yield ['1 is int & 1', true];
     yield ['2 is int & (1|2)', true];
     yield ['3 is int & float', false];
+    yield ['3 is 1|2|3', true];
     yield ['"test" is string & "success"', false];
 
     yield ['"test" is "success"|"failure"', false];

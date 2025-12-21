@@ -17,6 +17,7 @@ class VariablePinningTest extends EmittingTest {
     yield ['$y= 2; return [1, 2] is [1, ^$y]', true];
     yield ['$y= 2; return [1, 0] is [1, ^$y]', false];
 
+    yield ['return PHP_INT_MAX is ^PHP_INT_MAX', true];
     yield ['return [1, 0] is [1, ^self::ZERO]', true];
     yield ['return [1, 2] is [1, ^self::ZERO]', false];
   }

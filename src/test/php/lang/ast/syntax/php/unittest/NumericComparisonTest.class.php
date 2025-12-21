@@ -20,6 +20,9 @@ class NumericComparisonTest extends EmittingTest {
     yield ['0.0 is <1.0', true];
     yield ['1.0 is <1.0', false];
 
+    yield ['0 is <PHP_INT_MAX', true];
+    yield ['PHP_INT_MAX is >0', true];
+
     yield ['"1" is >0', true];
     yield ['"1e2" is >=100', true];
     yield ['"3.141" is >3 & <4', true];
