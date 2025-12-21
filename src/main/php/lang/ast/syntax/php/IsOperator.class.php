@@ -150,13 +150,13 @@ class IsOperator implements Extension {
           new BinaryExpression(
             new InvokeExpression(new Literal('sizeof'), [$temp]),
             $pattern->rest ? '>=' : '===',
-            new Literal(sizeof($pattern->patterns))
+            new Literal((string)sizeof($pattern->patterns))
           )
         );
         foreach ($pattern->patterns as $key => $p) {
           $compound= new BinaryExpression($compound, '&&', $match(
             $codegen,
-            new Braced(new BinaryExpression(new OffsetExpression($temp, new Literal($key)), '??', $null)),
+            new Braced(new BinaryExpression(new OffsetExpression($temp, new Literal((string)$key)), '??', $null)),
             $p
           ));
         }
