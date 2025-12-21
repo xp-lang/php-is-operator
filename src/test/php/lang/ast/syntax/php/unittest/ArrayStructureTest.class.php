@@ -38,6 +38,7 @@ class ArrayStructureTest extends EmittingTest {
     yield ['["one" => 1] is ["one" => 1, ...]', true];
     yield ['["one" => 1, "two" => 2] is ["one" => 1, ...]', true];
     yield ['["two" => 2] is ["one" => 1, ...]', false];
+    yield ['["two" => 2] is ["one" => null]', false];
 
     yield ['[2] is [0 => 2]', true];
     yield ['[2] is ["0" => 2]', true];

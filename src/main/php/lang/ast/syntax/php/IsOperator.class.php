@@ -224,10 +224,11 @@ class IsOperator implements Extension {
           )
         );
         foreach ($pattern->patterns as $key => $p) {
-          $compound= new BinaryExpression($compound, '&&', $match(
-            $codegen,
-            new Braced(new BinaryExpression(new OffsetExpression($temp, new Literal((string)$key)), '??', $null)),
-            $p
+          $offset= new Literal((string)$key);
+          $compound= new BinaryExpression($compound, '&&', new BinaryExpression(
+            new InvokeExpression(new Literal('array_key_exists'), [$offset, $temp]),
+            '&&',
+            $match($codegen, new OffsetExpression($temp, $offset), $p),
           ));
         }
         return $compound;
