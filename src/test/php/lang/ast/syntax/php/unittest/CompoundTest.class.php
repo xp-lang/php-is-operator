@@ -15,9 +15,15 @@ class CompoundTest extends EmittingTest {
     yield ['1.5 is int|float', true];
     yield ['"test" is int|float', false];
 
+    yield ['1 is int & 1', true];
+    yield ['2 is int & (1|2)', true];
+    yield ['3 is int & float', false];
+    yield ['"test" is string & "success"', false];
+
     yield ['"test" is "success"|"failure"', false];
     yield ['"success" is "success"|"failure"', true];
     yield ['"success" is "success"|"failure"|null', true];
+    yield ['"success" is "success"|"failure"|"running"', true];
 
     yield ['[] is ""|array', true];
     yield ['[] is array|""', true];
@@ -29,8 +35,15 @@ class CompoundTest extends EmittingTest {
     yield ['new Date() is IteratorAggregate|Runnable', false];
 
     yield ['$this is IteratorAggregate&Runnable', true];
+    yield ['$this is (IteratorAggregate&Runnable)', true];
     yield ['null is IteratorAggregate&Runnable', false];
     yield ['new Date() is IteratorAggregate&Runnable', false];
+
+    yield ['$this is null|(IteratorAggregate&Runnable)', true];
+    yield ['null is null|(IteratorAggregate&Runnable)', true];
+    yield ['$this is (IteratorAggregate&Runnable)|null', true];
+    yield ['null is (IteratorAggregate&Runnable)|null', true];
+    yield ['null is IteratorAggregate&(Runnable|null)', false];
 
     yield ['1 is null | >0 & <10', true];
     yield ['null is null | >0 & <10', true];

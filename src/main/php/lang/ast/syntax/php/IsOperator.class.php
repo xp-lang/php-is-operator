@@ -23,7 +23,11 @@ class IsOperator implements Extension {
 
   public function setup($language, $emitter) {
     $pattern= function($parse, $types) use(&$pattern) {
-      if ('(' === $parse->token->value || '?' === $parse->token->value) {
+      if ('(' === $parse->token->value) {
+        $parse->forward();
+        $r= $pattern($parse, $types);
+        $parse->expecting(')', 'dnf');
+      } else if ('?' === $parse->token->value) {
         $r= $types->type0($parse, false);
       } else if ('name' === $parse->token->kind) {
         $r= $types->type0($parse, false);
@@ -94,7 +98,15 @@ class IsOperator implements Extension {
       $operator= $parse->token->value;
       if ('|' === $operator || '&' === $operator) {
         $parse->forward();
-        return new IsCompound([$r, $pattern($parse, $types)], $operator);
+        $n= $pattern($parse, $types);
+
+        // Merge compound types with the same operators, keeping evaluation order
+        if ($n instanceof IsCompound && $operator === $n->operator) {
+          array_unshift($n->patterns, $r);
+          return $n;
+        } else {
+          return new IsCompound([$r, $n], $operator);
+        }
       } else {
         return $r;
       }
