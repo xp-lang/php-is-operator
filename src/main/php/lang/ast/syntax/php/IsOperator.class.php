@@ -178,21 +178,30 @@ class IsOperator implements Extension {
       } else if ($pattern instanceof IsIdentical) {
         return new BinaryExpression($expression, '===', $pattern->value);
       } else if ($pattern instanceof IsComparison) {
-        $temp= new Variable($codegen->symbol());
+        if ($expression instanceof Variable) {
+          $use= $init= $expression;
+        } else {
+          $use= new Variable($codegen->symbol());
+          $init= new Braced(new Assignment($use, '=', $expression));
+        }
+
         return new BinaryExpression(
-          new InvokeExpression(
-            new Literal('is_numeric'),
-            [new Braced(new Assignment($temp, '=', $expression))]
-          ),
+          new InvokeExpression(new Literal('is_numeric'), [$init]),
           '&&',
-          new BinaryExpression($temp, $pattern->operator, $pattern->value)
+          new BinaryExpression($use, $pattern->operator, $pattern->value)
         );
       } else if ($pattern instanceof IsNullable) {
-        $temp= new Variable($codegen->symbol());
+        if ($expression instanceof Variable) {
+          $use= $init= $expression;
+        } else {
+          $use= new Variable($codegen->symbol());
+          $init= new Braced(new Assignment($use, '=', $expression));
+        }
+
         return new BinaryExpression(
-          new BinaryExpression(new Literal('null'), '===', new Braced(new Assignment($temp, '=', $expression))),
+          new BinaryExpression(new Literal('null'), '===', $init),
           '||',
-          $match($codegen, $temp, $pattern->element)
+          $match($codegen, $use, $pattern->element)
         );
       } else if ($pattern instanceof IsBinding) {
         $true= new Literal('true');
@@ -205,20 +214,29 @@ class IsOperator implements Extension {
         $s= sizeof($pattern->patterns);
         if (1 === $s) return $match($codegen, $expression, $pattern->patterns[0]);
 
-        $temp= new Variable($codegen->symbol());
-        $compound= $match($codegen, new Braced(new Assignment($temp, '=', $expression)), $pattern->patterns[0]);
+        if ($expression instanceof Variable) {
+          $use= $init= $expression;
+        } else {
+          $use= new Variable($codegen->symbol());
+          $init= new Braced(new Assignment($use, '=', $expression));
+        }
+        $compound= $match($codegen, $init, $pattern->patterns[0]);
         for ($i= 1, $op= $pattern->operator.$pattern->operator; $i < $s; $i++) {
-          $compound= new BinaryExpression($compound, $op, $match($codegen, $temp, $pattern->patterns[$i]));
+          $compound= new BinaryExpression($compound, $op, $match($codegen, $use, $pattern->patterns[$i]));
         }
         return new Braced($compound);
       } else if ($pattern instanceof IsArrayStructure) {
-        $null= new Literal('null');
-        $temp= new Variable($codegen->symbol());
+        if ($expression instanceof Variable) {
+          $use= $init= $expression;
+        } else {
+          $use= new Variable($codegen->symbol());
+          $init= new Assignment($use, '=', $expression);
+        }
         $compound= new BinaryExpression(
-          new InvokeExpression(new Literal('is_array'), [new Assignment($temp, '=', $expression)]),
+          new InvokeExpression(new Literal('is_array'), [$init]),
           '&&',
           new BinaryExpression(
-            new InvokeExpression(new Literal('sizeof'), [$temp]),
+            new InvokeExpression(new Literal('sizeof'), [$use]),
             $pattern->rest ? '>=' : '===',
             new Literal((string)sizeof($pattern->patterns))
           )
@@ -226,19 +244,24 @@ class IsOperator implements Extension {
         foreach ($pattern->patterns as $key => $p) {
           $offset= new Literal((string)$key);
           $compound= new BinaryExpression($compound, '&&', new BinaryExpression(
-            new InvokeExpression(new Literal('array_key_exists'), [$offset, $temp]),
+            new InvokeExpression(new Literal('array_key_exists'), [$offset, $use]),
             '&&',
-            $match($codegen, new OffsetExpression($temp, $offset), $p),
+            $match($codegen, new OffsetExpression($use, $offset), $p),
           ));
         }
         return $compound;
       } else if ($pattern instanceof IsObjectStructure) {
-        $temp= new Variable($codegen->symbol());
-        $compound= new InstanceOfExpression(new Braced(new Assignment($temp, '=', $expression)), $pattern->type);
+        if ($expression instanceof Variable) {
+          $use= $init= $expression;
+        } else {
+          $use= new Variable($codegen->symbol());
+          $init= new Braced(new Assignment($use, '=', $expression));
+        }
+        $compound= new InstanceOfExpression($init, $pattern->type);
         foreach ($pattern->patterns as $key => $p) {
           $compound= new BinaryExpression($compound, '&&', $match(
             $codegen,
-            new InstanceExpression($temp, new Literal($key)),
+            new InstanceExpression($use, new Literal($key)),
             $p
           ));
         }
