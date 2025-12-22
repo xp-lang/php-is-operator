@@ -1,5 +1,6 @@
 <?php namespace lang\ast\syntax\php;
 
+use lang\IllegalStateException;
 use lang\ast\nodes\{
   ArrayLiteral,
   Assignment,
@@ -164,6 +165,8 @@ class IsOperator implements Extension {
     });
 
     $match= function($codegen, $expression, $pattern) use(&$match) {
+
+      // Basic type matching, literal comparison and variable binding
       if ($pattern instanceof IsLiteral) {
         $literal= $pattern->literal();
         if ('mixed' === $literal) {
@@ -175,34 +178,10 @@ class IsOperator implements Extension {
         }
       } else if ($pattern instanceof IsValue) {
         return new InstanceOfExpression($expression, $pattern);
+      } else if ($pattern instanceof IsArray || $pattern instanceof IsMap || $pattern instanceof IsFunction) {
+        return new InvokeExpression(new Literal('is'), [new Literal('"'.$pattern->name().'"'), $expression]);
       } else if ($pattern instanceof IsIdentical) {
         return new BinaryExpression($expression, '===', $pattern->value);
-      } else if ($pattern instanceof IsComparison) {
-        if ($expression instanceof Variable) {
-          $use= $init= $expression;
-        } else {
-          $use= new Variable($codegen->symbol());
-          $init= new Braced(new Assignment($use, '=', $expression));
-        }
-
-        return new BinaryExpression(
-          new InvokeExpression(new Literal('is_numeric'), [$init]),
-          '&&',
-          new BinaryExpression($use, $pattern->operator, $pattern->value)
-        );
-      } else if ($pattern instanceof IsNullable) {
-        if ($expression instanceof Variable) {
-          $use= $init= $expression;
-        } else {
-          $use= new Variable($codegen->symbol());
-          $init= new Braced(new Assignment($use, '=', $expression));
-        }
-
-        return new BinaryExpression(
-          new BinaryExpression(new Literal('null'), '===', $init),
-          '||',
-          $match($codegen, $use, $pattern->element)
-        );
       } else if ($pattern instanceof IsBinding) {
         $true= new Literal('true');
         return new Braced(new TernaryExpression(
@@ -210,28 +189,45 @@ class IsOperator implements Extension {
           $true,
           $true
         ));
-      } else if ($pattern instanceof IsCompound) {
-        $s= sizeof($pattern->patterns);
-        if (1 === $s) return $match($codegen, $expression, $pattern->patterns[0]);
+      }
 
-        if ($expression instanceof Variable) {
-          $use= $init= $expression;
-        } else {
-          $use= new Variable($codegen->symbol());
-          $init= new Braced(new Assignment($use, '=', $expression));
-        }
+      // Ensure expressions are only evaluated once.
+      if ($expression instanceof Variable) {
+        $use= $init= $expression;
+      } else {
+        $use= new Variable($codegen->symbol());
+        $init= new Braced(new Assignment($use, '=', $expression));
+      }
+
+      if ($pattern instanceof IsComparison) {
+        return new BinaryExpression(
+          new InvokeExpression(new Literal('is_numeric'), [$init]),
+          '&&',
+          new BinaryExpression($use, $pattern->operator, $pattern->value)
+        );
+      } else if ($pattern instanceof IsNullable) {
+        return new BinaryExpression(
+          new BinaryExpression(new Literal('null'), '===', $init),
+          '||',
+          $match($codegen, $use, $pattern->element)
+        );
+      } else if ($pattern instanceof IsCompound) {
         $compound= $match($codegen, $init, $pattern->patterns[0]);
-        for ($i= 1, $op= $pattern->operator.$pattern->operator; $i < $s; $i++) {
+        for ($i= 1, $s= sizeof($pattern->patterns), $op= $pattern->operator.$pattern->operator; $i < $s; $i++) {
           $compound= new BinaryExpression($compound, $op, $match($codegen, $use, $pattern->patterns[$i]));
         }
         return new Braced($compound);
-      } else if ($pattern instanceof IsArrayStructure) {
-        if ($expression instanceof Variable) {
-          $use= $init= $expression;
-        } else {
-          $use= new Variable($codegen->symbol());
-          $init= new Assignment($use, '=', $expression);
+      } else if ($pattern instanceof IsObjectStructure) {
+        $compound= new InstanceOfExpression($init, $pattern->type);
+        foreach ($pattern->patterns as $key => $p) {
+          $compound= new BinaryExpression($compound, '&&', $match(
+            $codegen,
+            new InstanceExpression($use, new Literal($key)),
+            $p
+          ));
         }
+        return $compound;
+      } else if ($pattern instanceof IsArrayStructure) {
         $compound= new BinaryExpression(
           new InvokeExpression(new Literal('is_array'), [$init]),
           '&&',
@@ -250,25 +246,10 @@ class IsOperator implements Extension {
           ));
         }
         return $compound;
-      } else if ($pattern instanceof IsObjectStructure) {
-        if ($expression instanceof Variable) {
-          $use= $init= $expression;
-        } else {
-          $use= new Variable($codegen->symbol());
-          $init= new Braced(new Assignment($use, '=', $expression));
-        }
-        $compound= new InstanceOfExpression($init, $pattern->type);
-        foreach ($pattern->patterns as $key => $p) {
-          $compound= new BinaryExpression($compound, '&&', $match(
-            $codegen,
-            new InstanceExpression($use, new Literal($key)),
-            $p
-          ));
-        }
-        return $compound;
-      } else {
-        return new InvokeExpression(new Literal('is'), [new Literal('"'.$pattern->name().'"'), $expression]);
       }
+
+      // Should be unreachable
+      throw new IllegalStateException('Unsupported pattern '.$pattern->toString());
     };
 
     $emitter->transform('is', function($codegen, $node) use($match) {
