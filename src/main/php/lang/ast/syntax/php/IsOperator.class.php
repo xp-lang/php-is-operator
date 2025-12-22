@@ -54,7 +54,7 @@ class IsOperator implements Extension {
           $parse->expecting(')', 'object structure');
         } else if ('::' === $parse->token->value) {
           $parse->forward();
-          $r= new IsComparison(new ScopeExpression($r->literal(), new Literal($parse->token->value)), '===');
+          $r= new IsIdentical(new ScopeExpression($r->literal(), new Literal($parse->token->value)));
           $parse->forward();
         }
       } else if ('string' === $parse->token->kind || 'integer' === $parse->token->kind || 'decimal' === $parse->token->kind) {
@@ -90,7 +90,7 @@ class IsOperator implements Extension {
         $parse->expecting(']', 'array structure');
       } else if ('^' === $parse->token->value) {
         $parse->forward();
-        $r= new IsComparison($types->expression($parse, 0), '===');
+        $r= new IsIdentical($types->expression($parse, 0));
       } else {
         $parse->expecting('a type or literal', 'is');
         return null;
