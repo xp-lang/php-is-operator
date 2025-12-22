@@ -164,8 +164,6 @@ class IsOperator implements Extension {
     });
 
     $match= function($codegen, $expression, $pattern) use(&$match) {
-      // \util\cmd\Console::writeLine('[...] is ', $pattern);
-
       if ($pattern instanceof IsLiteral) {
         $literal= $pattern->literal();
         if ('mixed' === $literal) {
