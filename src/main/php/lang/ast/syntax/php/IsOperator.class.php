@@ -14,7 +14,6 @@ use lang\ast\nodes\{
   MatchExpression,
   OffsetExpression,
   ScopeExpression,
-  TernaryExpression,
   Variable
 };
 use lang\ast\syntax\Extension;
@@ -183,11 +182,10 @@ class IsOperator implements Extension {
       } else if ($pattern instanceof IsIdentical) {
         return new BinaryExpression($expression, '===', $pattern->value);
       } else if ($pattern instanceof IsBinding) {
-        $true= new Literal('true');
-        return new Braced(new TernaryExpression(
+        return new Braced(new BinaryExpression(
           new Braced(new Assignment($pattern->variable, '=', $expression)),
-          $true,
-          $true
+          '||',
+          new Literal('true')
         ));
       }
 
