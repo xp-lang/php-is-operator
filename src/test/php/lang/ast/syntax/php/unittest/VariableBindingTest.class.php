@@ -79,10 +79,19 @@ class VariableBindingTest extends EmittingTest {
   }
 
   #[Test]
-  public function nested_destructuring() {
+  public function nested_list_destructuring() {
     Assert::equals([1, 2, 3], $this->run('class %T {
       public function run() {
         return [[1, 2], 3] is [[$a, $b], $c] ? [$a, $b, $c] : null;
+      }
+    }'));
+  }
+
+  #[Test]
+  public function nested_map_destructuring() {
+    Assert::equals('^8.0', $this->run('class %T {
+      public function run() {
+        return ["require" => ["php" => "^8.0"]] is ["require" => ["php" => $version]] ? $version : null;
       }
     }'));
   }
