@@ -77,4 +77,13 @@ class VariableBindingTest extends EmittingTest {
       }
     }'));
   }
+
+  #[Test]
+  public function nested_destructuring() {
+    Assert::equals([1, 2, 3], $this->run('class %T {
+      public function run() {
+        return [[1, 2], 3] is [[$a, $b], $c] ? [$a, $b, $c] : null;
+      }
+    }'));
+  }
 }
