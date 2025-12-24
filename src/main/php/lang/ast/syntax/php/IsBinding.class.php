@@ -4,6 +4,7 @@ use lang\ast\Type;
 
 class IsBinding extends Type {
   public $variable;
+  public $restriction= null;
 
   /**
    * Creates a binding "type"
@@ -16,6 +17,7 @@ class IsBinding extends Type {
 
   /** @return string */
   public function toString() {
-    return nameof($this).'('.$this->variable->pointer.')';
+    $restriction= $this->restriction ? ' & '.Objects::stringOf($this->restriction) : '';
+    return nameof($this).'('.$this->variable->pointer.$restriction.')';
   }
 }

@@ -1,6 +1,7 @@
 <?php namespace lang\ast\syntax\php\unittest;
 
 use lang\NullPointerException;
+use lang\ast\Errors;
 use lang\ast\unittest\emit\EmittingTest;
 use test\{Assert, Test, Values, Expect};
 
@@ -68,6 +69,15 @@ class VariableBindingTest extends EmittingTest {
     }', explode(' ', $input)));
   }
 
+  #[Test, Expect(class: Errors::class, message: '/Expected "\]", have "\|"/')]
+  public function binding_may_not_be_ored() {
+    $this->run('class %T {
+      public function run() {
+        [] is [$variable | 0];
+      }
+    }');
+  }
+
   #[Test, Expect(class: NullPointerException::class, message: '/Undefined variable(.+)z/')]
   public function delayed_binding() {
     Assert::equals([false, null], $this->run('use lang\\ast\\syntax\\php\\unittest\\Point; class %T {
@@ -92,6 +102,16 @@ class VariableBindingTest extends EmittingTest {
     Assert::equals('^8.0', $this->run('class %T {
       public function run() {
         return ["require" => ["php" => "^8.0"]] is ["require" => ["php" => $version]] ? $version : null;
+      }
+    }'));
+  }
+
+  #[Test, Values(['[] is [$var]', '["test"] is [$var & int]'])]
+  public function variable_unset_when_unmatched($expr) {
+    Assert::false($this->run('class %T {
+      public function run() {
+        '.$expr.';
+        return isset($var);
       }
     }'));
   }

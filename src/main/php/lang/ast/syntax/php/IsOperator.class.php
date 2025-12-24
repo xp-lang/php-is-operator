@@ -64,6 +64,13 @@ class IsOperator implements Extension {
         $parse->forward();
         $r= new IsBinding(new Variable($parse->token->value));
         $parse->forward();
+
+        // See https://wiki.php.net/rfc/pattern-matching#applying_patterns_to_bound_variables
+        if ('&' === $parse->token->value) {
+          $parse->forward();
+          $r->restriction= $pattern($parse, $types);
+        }
+        return $r;
       } else if ('>' === $parse->token->value || '>=' === $parse->token->value || '<' === $parse->token->value || '<=' === $parse->token->value) {
         $operator= $parse->token->value;
         $parse->forward();
@@ -108,9 +115,9 @@ class IsOperator implements Extension {
         } else {
           return new IsCompound([$r, $n], $operator);
         }
-      } else {
-        return $r;
       }
+
+      return $r;
     };
 
     $language->infix('is', 60, function($parse, $token, $left) use($pattern) {
@@ -182,11 +189,20 @@ class IsOperator implements Extension {
       } else if ($pattern instanceof IsIdentical) {
         return new BinaryExpression($expression, '===', $pattern->value);
       } else if ($pattern instanceof IsBinding) {
-        return new Braced(new BinaryExpression(
-          new Braced(new Assignment($pattern->variable, '=', $expression)),
-          '||',
-          new Literal('true')
-        ));
+        $bind= new Assignment($pattern->variable, '=', $expression);
+        $compound= new Braced(new BinaryExpression(new Braced($bind), '||', new Literal('true')));
+
+        // Assign to temporary variable, only actually bind if restriction matches
+        if ($pattern->restriction) {
+          $bind->expression= new Variable($codegen->symbol());
+          $compound= new BinaryExpression(
+            $match($codegen, new Braced(new Assignment($bind->expression, '=', $expression)), $pattern->restriction),
+            '&&',
+            $compound
+          );
+        }
+
+        return $compound;
       }
 
       // Ensure expressions are only evaluated once.
