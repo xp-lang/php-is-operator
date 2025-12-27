@@ -17,7 +17,7 @@ class IsBinding extends Type {
 
   /** @return string */
   public function toString() {
-    $restriction= $this->restriction ? ' & '.Objects::stringOf($this->restriction) : '';
+    $restriction= $this->restriction ? ' & '.$this->restriction->toString() : '';
     return nameof($this).'('.$this->variable->pointer.$restriction.')';
   }
 }
