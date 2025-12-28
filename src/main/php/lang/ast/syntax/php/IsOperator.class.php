@@ -125,7 +125,7 @@ class IsOperator implements Extension {
     });
 
     $language->prefix('match', 0, function($parse, $token) use($pattern) {
-      $patterns= false;
+      $patterns= null;
       $condition= null;
 
       if ('(' === $parse->token->value) {
@@ -136,7 +136,15 @@ class IsOperator implements Extension {
         // See https://wiki.php.net/rfc/pattern-matching#match_is_placement
         if ('is' === $parse->token->value) {
           $parse->forward();
-          $patterns= true;
+
+          $true= new Literal('true');
+          if ($condition instanceof Variable) {
+            $patterns= $condition;
+            $condition= $true;
+          } else {
+            $patterns= new Variable('Ṁ');
+            $condition= new BinaryExpression(new Braced(new Assignment($patterns, '=', $condition)), '||', $true);
+          }
         }
       }
 
@@ -149,7 +157,7 @@ class IsOperator implements Extension {
           $parse->expecting('=>', 'match');
           $default= $this->expression($parse, 0);
         } else if ($patterns) {
-          $match= [new PatternMatch($condition, $pattern($parse, $this), $parse->token->line)];
+          $match= [new PatternMatch($patterns, $pattern($parse, $this), $parse->token->line)];
           $parse->expecting('=>', 'match');
           $cases[]= new MatchCondition($match, $this->expression($parse, 0), $parse->token->line);
         } else {
@@ -167,7 +175,7 @@ class IsOperator implements Extension {
       }
       $parse->expecting('}', 'match');
 
-      return new MatchExpression($patterns ? null : $condition, $cases, $default, $token->line);
+      return new MatchExpression($condition, $cases, $default, $token->line);
     });
 
     $match= function($codegen, $expression, $pattern) use(&$match) {
