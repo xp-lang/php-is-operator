@@ -31,6 +31,13 @@ class VariableBindingTest extends EmittingTest {
 
     yield ['[1, [1]] is [1, $rest] ? $rest : null', [1]];
     yield ['[1, [2], "three"] is [1, mixed, $rest] ? $rest : null', 'three'];
+    yield ['[] is [...$rest] ? $rest : null', []];
+    yield ['[1] is [int, ...$rest] ? $rest : null', []];
+    yield ['[1, 2, 3] is [...$rest] ? $rest : null', [1, 2, 3]];
+    yield ['[1, 2, 3] is [1, ...$rest] ? $rest : null', [2, 3]];
+    yield ['[1, [1]] is [int, ...$rest] ? $rest : null', [[1]]];
+    yield ['["one" => 1] is ["one" => 1, ...$rest] ? $rest : null', []];
+    yield ['["one" => 1, "two" => 2] is ["one" => 1, ...$rest] ? $rest : null', ['two' => 2]];
 
     yield ['["one" => 1, "two" => 2] is ["one" => 1, "two" => $t] ? $t : null', 2];
     yield ['["one" => 0, "two" => 2] is ["one" => 1, "two" => $t] ? $t : null', null];
@@ -57,12 +64,13 @@ class VariableBindingTest extends EmittingTest {
     }', explode(' ', $input)));
   }
 
-  #[Test, Values([['go north', 'north'], ['go south', 'south'], ['go home', null]])]
+#[Test, Values([['go north', 'north'], ['go south', 'south'], ['go home', null], ['drop it now', ['it', 'now']]])]
   public function bind_with_subpattern($input, $expected) {
     Assert::equals($expected, $this->run('class %T {
       public function run($command) {
         return match ($command) {
           is ["go", $direction & ("north"|"south"|"east"|"west")] => $direction,
+          is ["drop", ...$objects] => $objects,
           default => null,
         };
       }

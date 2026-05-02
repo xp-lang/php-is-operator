@@ -14,6 +14,7 @@ use lang\ast\nodes\{
   MatchExpression,
   OffsetExpression,
   ScopeExpression,
+  UnpackExpression,
   Variable
 };
 use lang\ast\syntax\Extension;
@@ -80,9 +81,17 @@ class IsOperator implements Extension {
         $r= new IsArrayStructure();
         $parse->forward();
         if (']' !== $parse->token->value) do {
+
+          // Bind rest of array via `... $rest` vs. discarding it
           if ('...' === $parse->token->value) {
-            $r->rest= true;
             $parse->forward();
+            if ('variable' === $parse->token->kind) {
+              $parse->forward();
+              $r->rest= new Variable($parse->token->value);
+              $parse->forward();
+            } else {
+              $r->rest= true;
+            }
             break;
           }
 
@@ -284,14 +293,34 @@ class IsOperator implements Extension {
             new Literal((string)sizeof($pattern->patterns))
           )
         );
+        $matched= new ArrayLiteral([]);
+        $null= new Literal('null');
         foreach ($pattern->patterns as $key => $p) {
           $offset= new Literal((string)$key);
+          $matched->values[]= [$offset, $null];
           $compound= new BinaryExpression($compound, '&&', new BinaryExpression(
             new InvokeExpression(new Literal('array_key_exists'), [$offset, $use]),
             '&&',
             $match($codegen, new OffsetExpression($use, $offset), $p),
           ));
         }
+
+        // array_diff_key() removes entries for keys in the second argument,
+        // unpacking re-keys lists but keeps map key-value pairs intact.
+        if ($pattern->rest instanceof Variable) {
+          $compound= new BinaryExpression($compound, '&&', new Braced(new BinaryExpression(
+            new Braced(new Assignment($pattern->rest, '=', $pattern->patterns
+              ? new ArrayLiteral([[
+                null,
+                new UnpackExpression(new InvokeExpression(new Literal('array_diff_key'), [$use, $matched]))
+              ]])
+              : $use
+            )),
+            '||',
+            new Literal('true')
+          )));
+        }
+
         return $compound;
       }
 
