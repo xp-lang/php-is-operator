@@ -36,13 +36,14 @@ class IsOperatorTest extends EmittingTest {
     }', $arg));
   }
 
-  #[Test, Values([[1, 'int'], ['test', 'string']])]
+  #[Test, Values([[1, 'int'], ['', 'string'], ['test', 'string'], [null, 'undefined']])]
   public function match_is_variant($arg, $expected) {
     Assert::equals($expected, $this->run('class %T {
-      public function run(string|int $arg) {
-        return match ($arg) is {
-          string => "string",
-          int => "int",
+      public function run(?string|int $arg) {
+        return match ($arg) {
+          is string => "string",
+          is int => "int",
+          null => "undefined",
         };
       }
     }', $arg));
@@ -57,9 +58,9 @@ class IsOperatorTest extends EmittingTest {
           $invoked++;
           return 1;
         };
-        return match ($arg()) is {
-          0 => ["zero", $invoked],
-          1 => ["one", $invoked],
+        return match ($arg()) {
+          is 0 => ["zero", $invoked],
+          is 1 => ["one", $invoked],
         };
       }
     }'));

@@ -49,8 +49,8 @@ class VariableBindingTest extends EmittingTest {
   public function compound_binding($input) {
     Assert::equals('apple', $this->run('class %T {
       public function run($command) {
-        return match ($command) is {
-          ["get", $object]|["pick", "up", $object]|["pick", $object, "up"] => $object,
+        return match ($command) {
+          is ["get", $object]|["pick", "up", $object]|["pick", $object, "up"] => $object,
           default => null,
         };
       }
@@ -61,8 +61,8 @@ class VariableBindingTest extends EmittingTest {
   public function bind_with_subpattern($input, $expected) {
     Assert::equals($expected, $this->run('class %T {
       public function run($command) {
-        return match ($command) is {
-          ["go", $direction & ("north"|"south"|"east"|"west")] => $direction,
+        return match ($command) {
+          is ["go", $direction & ("north"|"south"|"east"|"west")] => $direction,
           default => null,
         };
       }

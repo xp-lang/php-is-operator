@@ -125,6 +125,8 @@ class IsOperator implements Extension {
     });
 
     $language->prefix('match', 0, function($parse, $token) use($pattern) {
+      static $id= 0;
+
       $patterns= null;
       $condition= null;
 
@@ -148,6 +150,7 @@ class IsOperator implements Extension {
         }
       }
 
+      $is= false;
       $default= null;
       $cases= [];
       $parse->expecting('{', 'match');
@@ -156,8 +159,10 @@ class IsOperator implements Extension {
           $parse->forward();
           $parse->expecting('=>', 'match');
           $default= $this->expression($parse, 0);
-        } else if ($patterns) {
-          $match= [new PatternMatch($patterns, $pattern($parse, $this), $parse->token->line)];
+        } else if ('is' === $parse->token->value) {
+          $is= true;
+          $parse->forward();
+          $match= [new PatternMatch(null, $pattern($parse, $this), $parse->token->line)];
           $parse->expecting('=>', 'match');
           $cases[]= new MatchCondition($match, $this->expression($parse, 0), $parse->token->line);
         } else {
@@ -174,6 +179,26 @@ class IsOperator implements Extension {
         }
       }
       $parse->expecting('}', 'match');
+
+      // If one of the branches contains an `is` match, rewrite the statement
+      if ($is) {
+        $patterns= new Variable('Ϻ'.($id++));
+        $condition= new BinaryExpression(
+          new Braced(new Assignment($patterns, '=', $condition)),
+          '||',
+          new Literal('true')
+        );
+
+        foreach ($cases as $case) {
+          foreach ($case->expressions as &$match) {
+            if ($match instanceof PatternMatch) {
+              $match->expression= $patterns;
+            } else {
+              $match= new BinaryExpression($match, '===', $patterns);
+            }
+          }
+        }
+      }
 
       return new MatchExpression($condition, $cases, $default, $token->line);
     });
