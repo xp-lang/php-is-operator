@@ -123,4 +123,28 @@ class VariableBindingTest extends EmittingTest {
       }
     }'));
   }
+
+  #[Test]
+  public function property_hook_interop() {
+    Assert::equals('8.0', $this->run('class %T {
+      public $version { get => "8.0"; }
+
+      public function run() {
+        return new self() is self(:$version) ? $version : null;
+      }
+    }'));
+  }
+
+  #[Test]
+  public function magic_property_interop() {
+    Assert::equals('8.0', $this->run('class %T {
+      public function __get($name) {
+        if ("version" === $name) return "8.0";
+      }
+
+      public function run() {
+        return new self() is self(:$version) ? $version : null;
+      }
+    }'));
+  }
 }
