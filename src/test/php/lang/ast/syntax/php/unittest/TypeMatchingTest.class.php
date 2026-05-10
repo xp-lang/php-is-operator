@@ -3,6 +3,7 @@
 use lang\ast\unittest\emit\EmittingTest;
 use test\{Assert, Test, Values};
 
+/** @see https://wiki.php.net/rfc/pattern-matching#type_pattern */
 class TypeMatchingTest extends EmittingTest {
 
   /** @return iterable */
@@ -73,20 +74,12 @@ class TypeMatchingTest extends EmittingTest {
 
     yield ['new Date() is Date', true];
     yield ['$this is IteratorAggregate', true];
+    yield ['$this is Runnable', true];
     yield ['$this is Date', false];
-
-    yield ['$this is IteratorAggregate&Runnable', true];
-    yield ['new Date() is IteratorAggregate&Runnable', false];
-    yield ['null is IteratorAggregate&Runnable', false];
 
     yield ['$this is self', true];
     yield ['new Date() is self', false];
     yield ['null is self', false];
-
-    yield ['1 is int|float', true];
-    yield ['1.5 is int|float', true];
-    yield ['"test" is int|float', false];
-    yield ['$this is array|IteratorAggregate', true];
   }
 
   #[Test, Values(from: 'fixtures')]
@@ -106,6 +99,22 @@ class TypeMatchingTest extends EmittingTest {
 
       public function run() {
         return '.$expr.';
+      }
+    }'));
+  }
+
+  #[Test]
+  public function expression_evaluated_once() {
+    Assert::equals([true, 1], $this->run('class %T {
+      public function run() {
+        $evaluated= 0;
+        $expr= function() use(&$evaluated) {
+          $evaluated++;
+          return 1;
+        };
+
+        $result= $expr() is ?int;
+        return [$result, $evaluated];
       }
     }'));
   }

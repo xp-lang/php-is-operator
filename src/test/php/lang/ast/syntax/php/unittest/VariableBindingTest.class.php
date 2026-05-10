@@ -1,0 +1,126 @@
+<?php namespace lang\ast\syntax\php\unittest;
+
+use lang\NullPointerException;
+use lang\ast\Errors;
+use lang\ast\unittest\emit\EmittingTest;
+use test\{Assert, Test, Values, Expect};
+
+/** @see https://wiki.php.net/rfc/pattern-matching#variable_binding */
+class VariableBindingTest extends EmittingTest {
+
+  /** @return iterable */
+  private function fixtures() {
+    yield ['new Point(1, 2, 3) is Point(z: $z) ? $z : null', 3];
+    yield ['new Point(1, 2, 3) is Point(:$z) ? $z : null', 3];
+    yield ['new Point(1, 2, 3) is Point(z: $bound) ? $bound : null', 3];
+
+    yield ['new Point(1, 2, 3) is Point(x: 1, y: 2, z: $z) ? $z : null', 3];
+    yield ['new Point(1, 2, 3) is Point(x: 0, y: 2, z: $z) ? $z : null', null];
+
+    yield ['new Point(1, 2, 3) is Point(x: $x, y: $y, z: $z) ? [$x, $y, $z] : null', [1, 2, 3]];
+    yield ['new Point(1, 2, 3) is Point(:$x, :$y, :$z) ? [$x, $y, $z] : null', [1, 2, 3]];
+
+    yield ['new Point(1, 2, 3) is Point(:$z & ?int) ? $z : null', 3];
+    yield ['new Point(1, 2, 3) is Point(:$x, :$y, :$z & > 0) ? [$x, $y, $z] : null', [1, 2, 3]];
+    yield ['new Point(1, 2, 0) is Point(:$x, :$y, :$z & > 0) ? [$x, $y, $z] : null', null];
+
+    yield ['[1, 2, 3] is [1, 2, $z] ? $z : null', 3];
+    yield ['[0, 2, 3] is [1, 2, $z] ? $z : null', null];
+    yield ['[1, 2, 3] is [$x, $y, $z] ? [$x, $y, $z] : null', [1, 2, 3]];
+    yield ['[0, 1, 2] is [$x, $y, $z] ? [$x, $y, $z] : null', [0, 1, 2]];
+
+    yield ['[1, [1]] is [1, $rest] ? $rest : null', [1]];
+    yield ['[1, [2], "three"] is [1, mixed, $rest] ? $rest : null', 'three'];
+    yield ['[] is [...$rest] ? $rest : null', []];
+    yield ['[1] is [int, ...$rest] ? $rest : null', []];
+    yield ['[1, 2, 3] is [...$rest] ? $rest : null', [1, 2, 3]];
+    yield ['[1, 2, 3] is [1, ...$rest] ? $rest : null', [2, 3]];
+    yield ['[1, [1]] is [int, ...$rest] ? $rest : null', [[1]]];
+    yield ['["one" => 1] is ["one" => 1, ...$rest] ? $rest : null', []];
+    yield ['["one" => 1, "two" => 2] is ["one" => 1, ...$rest] ? $rest : null', ['two' => 2]];
+
+    yield ['["one" => 1, "two" => 2] is ["one" => 1, "two" => $t] ? $t : null', 2];
+    yield ['["one" => 0, "two" => 2] is ["one" => 1, "two" => $t] ? $t : null', null];
+  }
+
+  #[Test, Values(from: 'fixtures')]
+  public function test($expr, $expected) {
+    Assert::equals($expected, $this->run('use lang\\Value, lang\\ast\\syntax\\php\\unittest\\Point; class %T {
+      public function run() {
+        return '.$expr.';
+      }
+    }'));
+  }
+
+  #[Test, Values(['get apple', 'pick up apple', 'pick apple up'])]
+  public function compound_binding($input) {
+    Assert::equals('apple', $this->run('class %T {
+      public function run($command) {
+        return match ($command) {
+          is ["get", $object]|["pick", "up", $object]|["pick", $object, "up"] => $object,
+          default => null,
+        };
+      }
+    }', explode(' ', $input)));
+  }
+
+#[Test, Values([['go north', 'north'], ['go south', 'south'], ['go home', null], ['drop it now', ['it', 'now']]])]
+  public function bind_with_subpattern($input, $expected) {
+    Assert::equals($expected, $this->run('class %T {
+      public function run($command) {
+        return match ($command) {
+          is ["go", $direction & ("north"|"south"|"east"|"west")] => $direction,
+          is ["drop", ...$objects] => $objects,
+          default => null,
+        };
+      }
+    }', explode(' ', $input)));
+  }
+
+  #[Test, Expect(class: Errors::class, message: '/Expected "\]", have "\|"/')]
+  public function binding_may_not_be_ored() {
+    $this->run('class %T {
+      public function run() {
+        [] is [$variable | 0];
+      }
+    }');
+  }
+
+  #[Test, Expect(class: NullPointerException::class, message: '/Undefined variable(.+)z/')]
+  public function delayed_binding() {
+    Assert::equals([false, null], $this->run('use lang\\ast\\syntax\\php\\unittest\\Point; class %T {
+      public function run() {
+        new Point(1, -1) is Point(x: 0, :$z);
+        return $z;
+      }
+    }'));
+  }
+
+  #[Test]
+  public function nested_list_destructuring() {
+    Assert::equals([1, 2, 3], $this->run('class %T {
+      public function run() {
+        return [[1, 2], 3] is [[$a, $b], $c] ? [$a, $b, $c] : null;
+      }
+    }'));
+  }
+
+  #[Test]
+  public function nested_map_destructuring() {
+    Assert::equals('^8.0', $this->run('class %T {
+      public function run() {
+        return ["require" => ["php" => "^8.0"]] is ["require" => ["php" => $version]] ? $version : null;
+      }
+    }'));
+  }
+
+  #[Test, Values(['[] is [$var]', '["test"] is [$var & int]'])]
+  public function variable_unset_when_unmatched($expr) {
+    Assert::false($this->run('class %T {
+      public function run() {
+        '.$expr.';
+        return isset($var);
+      }
+    }'));
+  }
+}
