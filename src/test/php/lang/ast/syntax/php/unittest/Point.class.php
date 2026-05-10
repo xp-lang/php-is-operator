@@ -20,7 +20,7 @@ class Point implements Value {
 
   /** @return string */
   public function toString() {
-    return namoef($this).'('.$this->x.', '.$this->y.', '.$this->z.')';
+    return nameof($this).'('.$this->x.', '.$this->y.', '.$this->z.')';
   }
 
   /**
