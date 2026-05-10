@@ -284,31 +284,37 @@ class IsOperator implements Extension {
         }
         return $compound;
       } else if ($pattern instanceof IsArrayStructure) {
-        $compound= new BinaryExpression(
-          new InvokeExpression(new Literal('is_array'), [$init]),
-          '&&',
-          new BinaryExpression(
-            new InvokeExpression(new Literal('sizeof'), [$use]),
-            $pattern->rest ? '>=' : '===',
-            new Literal((string)sizeof($pattern->patterns))
-          )
+        $size= new BinaryExpression(
+          new InvokeExpression(new Literal('sizeof'), [$use]),
+          $pattern->rest ? '>=' : '===',
+          new Literal((string)sizeof($pattern->patterns))
         );
+        $arrays= new BinaryExpression(new InvokeExpression(new Literal('is_array'), [$init]), '&&', $size);
+        $objects= new BinaryExpression(new InstanceOfExpression($init, new IsValue('ArrayAccess')), '&&', $size);
+
         $matched= new ArrayLiteral([]);
         $null= new Literal('null');
         foreach ($pattern->patterns as $key => $p) {
           $offset= new Literal((string)$key);
           $matched->values[]= [$offset, $null];
-          $compound= new BinaryExpression($compound, '&&', new BinaryExpression(
+
+          $apply= $match($codegen, new OffsetExpression($use, $offset), $p);
+          $arrays= new BinaryExpression($arrays, '&&', new BinaryExpression(
             new InvokeExpression(new Literal('array_key_exists'), [$offset, $use]),
             '&&',
-            $match($codegen, new OffsetExpression($use, $offset), $p),
+            $apply,
+          ));
+          $objects= new BinaryExpression($objects, '&&', new BinaryExpression(
+            new InvokeExpression(new InstanceExpression($use, new Literal('offsetExists')), [$offset]),
+            '&&',
+            $apply,
           ));
         }
 
         // array_diff_key() removes entries for keys in the second argument,
         // unpacking re-keys lists but keeps map key-value pairs intact.
         if ($pattern->rest instanceof Variable) {
-          $compound= new BinaryExpression($compound, '&&', new Braced(new BinaryExpression(
+          $arrays= new BinaryExpression($arrays, '&&', new Braced(new BinaryExpression(
             new Braced(new Assignment($pattern->rest, '=', $pattern->patterns
               ? new ArrayLiteral([[
                 null,
@@ -319,9 +325,23 @@ class IsOperator implements Extension {
             '||',
             new Literal('true')
           )));
+          $objects= new BinaryExpression($objects, '&&', new Braced(new BinaryExpression(
+            new Braced(new Assignment($pattern->rest, '=', $pattern->patterns
+              ? new ArrayLiteral([[
+                null,
+                new UnpackExpression(new InvokeExpression(new Literal('array_diff_key'), [
+                  new ArrayLiteral([[null, new UnpackExpression($use)]]),
+                  $matched
+                ]))
+              ]])
+              : new ArrayLiteral([[null, new UnpackExpression($use)]])
+            )),
+            '||',
+            new Literal('true')
+          )));
         }
 
-        return $compound;
+        return new Braced(new BinaryExpression($arrays, '||', $objects));
       }
 
       // Should be unreachable
