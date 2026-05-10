@@ -49,21 +49,23 @@ class IsOperatorTest extends EmittingTest {
     }', $arg));
   }
 
-  #[Test]
-  public function match_is_condition_evaluated_once() {
-    Assert::equals(['one', 1], $this->run('class %T {
-      public function run() {
+  #[Test, Values([[0, 'zero'], [1, 'one'], [null, '<null>'], ['test', '<default>']])]
+  public function match_is_condition_evaluated_once($arg, $expected) {
+    Assert::equals([$expected, 1], $this->run('class %T {
+      public function run($return) {
         $invoked= 0;
-        $arg= function() use(&$invoked) {
+        $arg= function() use(&$invoked, $return) {
           $invoked++;
-          return 1;
+          return $return;
         };
         return match ($arg()) {
-          is 0 => ["zero", $invoked],
-          is 1 => ["one", $invoked],
+          is 0       => ["zero", $invoked],
+          is 1 & int => ["one", $invoked],
+          null       => ["<null>", $invoked],
+          default    => ["<default>", $invoked],
         };
       }
-    }'));
+    }', $arg));
   }
 
   #[Test, Values([[1, true], ["one", true], [null, false]])]
