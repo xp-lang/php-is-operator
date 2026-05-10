@@ -3,6 +3,10 @@ Is operator for PHP - ChangeLog
 
 ## ?.?.? / ????-??-??
 
+## 3.0.0 / 2026-05-10
+
+* Merged PR #2: Make compatible with PHP's pattern matching RFC - @thekid
+
 ## 2.1.0 / 2025-12-20
 
 * Emit `$expr is mixed` as `true`, making it effectively a wildcard as
